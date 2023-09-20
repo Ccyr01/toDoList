@@ -33,7 +33,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 
-mongoose.connect("mongodb://127.0.0.1/app", {
+mongoose.connect("mongodb+srv://ccyrius01:mjMaqwTQhxigKGgz@cluster0.mtxexdo.mongodb.net/", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -157,22 +157,16 @@ app.post("/list", (req, res) => {
 });
 
 //get all tasks based on associated user id
-app.get('/tasks', async (req, res) => {
-  //tasks for all users
-  //tasks find for THIS user
-  //
-  //645ea5352b0dc49528dc8149
-  const tasks = await Task
-  // .find({'user': req.cookies.userID})
-  // .populate('user')
-  .find()
-  .exec()
-  .then(result => {
-    res.status(200).json(result);
-  }).catch(err => {
-    res.status(500)
-  })
-})
+app.get("/tasks", async (req, res) => {
+  const tasks = await Task.find({ user: req.cookies.userID })
+    .exec()
+    .then((result) => {
+      res.status(200).json(result);
+    })
+    .catch((err) => {
+      res.status(500);
+    });
+});
 
 //TODO: possibly delete
 app.get('/task/:taskId', async (req, res) => {

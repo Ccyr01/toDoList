@@ -161,3 +161,7 @@ nav ul li {
   color: #156fe6;
   text-decoration: none;
 }
+
+#updateSubmit {
+  display: hidden;
+}

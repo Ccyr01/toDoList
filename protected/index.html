@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>TO-DO LIST</title>
-    <script src="../public/script.js" type="module"></script>
     <link rel="stylesheet" href="../public/styles.css" />
     <link
       rel="stylesheet"
@@ -179,13 +178,14 @@
             <option value="yellow" class="personal">Personal</option>
             <option value="blue" class="work">Work</option>
           </select>
+          <button id="updateSubmit">Submit</button>
         </div>
       </template>
 
 
       <div id="tasks"></div>
 
-      <template id="taskTemplate">
+      <template id="taskTemplate" hidden>
         <div class="task">
           <input type="checkbox" class="task-complete" />
           <input type="text" class="task-text" /><br />

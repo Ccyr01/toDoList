@@ -4,6 +4,7 @@
 const tasks_container = document.getElementById("tasks");
 const task_template = document.getElementById("taskTemplate");
 const add_button = document.getElementById("add");
+let isWaiting = false;
 const delete_button = document.getElementById("delete");
 
 const about_button = document.getElementById("about");
@@ -95,6 +96,12 @@ function setTasks(tasks) {
 }
 
 async function addTask() {
+//prevents just in case double click add button
+  if(isWaiting){
+    return;
+  }
+  //set isWaiting to true to make sure code is not run twice for one click
+  isWaiting = true;
   const userID = getCookie("userID");
   console.log("userID", userID);
 
@@ -110,13 +117,14 @@ async function addTask() {
   const task = await saveToDatabase(newTask);
   tasks.unshift(task);
   refreshList();
+  isWaiting = false;
 }
 
 async function updateTask(task, key, value) {
   task[key] = value;
 
-  await updateInDatabase(task);
-  refreshList();
+  // await updateInDatabase(task);
+  // refreshList();
 }
 
 //TODO: use backend delete endpoint
@@ -140,7 +148,7 @@ function refreshList() {
     const completedInput = taskElement.querySelector(".task-complete");
     const dateInput = taskElement.querySelector(".task-date");
     const repeatTask = taskElement.querySelector(".task-recurring");
-
+    const updateSubmit = taskElement.querySelector("#updateSubmit");
     const colorTask = taskElement.querySelector(".task-color");
 
     descriptionInput.value = task.description;
@@ -150,58 +158,67 @@ function refreshList() {
 
     colorTask.value = task.color;
 
-    descriptionInput.addEventListener("change", async () => {
-      await updateTask(task, "description", descriptionInput.value);
-    });
+    // descriptionInput.addEventListener("change", async () => {
+    //   await updateTask(task, "description", descriptionInput.value);
+    // });
 
-    completedInput.addEventListener("change", async () => {
-      if (!task.completed) updateTask(task, "completed", true);
-      else updateTask(task, "completed", false);
-    });
+    // completedInput.addEventListener("change", async () => {
+    //   if (!task.completed) updateTask(task, "completed", true);
+    //   else updateTask(task, "completed", false);
+    // });
 
-    dateInput.addEventListener("change", async () => {
-      await updateTask(task, "date", dateInput.value);
-      console.log(dateInput.value);
-    });
+    // dateInput.addEventListener("change", async () => {
+    //   await updateTask(task, "date", dateInput.value);
+    //   console.log(dateInput.value);
+    // });
 
-    repeatTask.addEventListener("change", async () => {
-      await updateTask(task, "repeat", repeatTask.value);
-      console.log(repeatTask.value);
+    // repeatTask.addEventListener("change", async () => {
+    //   await updateTask(task, "repeat", repeatTask.value);
+    //   console.log(repeatTask.value);
 
-      var dateEntered = new Date(dateInput.value);
-      dateEntered.setDate(dateEntered.getDate() + 1);
+    //   var dateEntered = new Date(dateInput.value);
+    //   dateEntered.setDate(dateEntered.getDate() + 1);
 
-      // recurring task functionality, shows first 10 instances and adds them to an array. array is checked in separate function
-      if (repeatTask.value == "daily") {
-        for (let i = 0; i < 10; i++) {
-          // console.log("DAILY " + dateEntered);
-          datesList.push(dateEntered.toString().substring(0, 15));
-          dateEntered.setDate(dateEntered.getDate() + 1);
-        }
-        sendNotifications();
-      } else if (repeatTask.value == "weekly") {
-        for (let i = 0; i < 10; i++) {
-          // console.log("WEEKLY " + dateEntered);
-          datesList.push(dateEntered.toString().substring(0, 15));
-          dateEntered.setDate(dateEntered.getDate() + 7);
-        }
-        sendNotifications();
-      } else if (repeatTask.value == "yearly") {
-        for (let i = 0; i < 10; i++) {
-          // console.log("YEARLY " + dateEntered);
-          datesList.push(dateEntered.toString().substring(0, 15));
-          dateEntered.setDate(dateEntered.getDate() + 365);
-        }
-        sendNotifications();
-      }
+    //   // recurring task functionality, shows first 10 instances and adds them to an array. array is checked in separate function
+    //   if (repeatTask.value == "daily") {
+    //     for (let i = 0; i < 10; i++) {
+    //       // console.log("DAILY " + dateEntered);
+    //       datesList.push(dateEntered.toString().substring(0, 15));
+    //       dateEntered.setDate(dateEntered.getDate() + 1);
+    //     }
+    //     sendNotifications();
+    //   } else if (repeatTask.value == "weekly") {
+    //     for (let i = 0; i < 10; i++) {
+    //       // console.log("WEEKLY " + dateEntered);
+    //       datesList.push(dateEntered.toString().substring(0, 15));
+    //       dateEntered.setDate(dateEntered.getDate() + 7);
+    //     }
+    //     sendNotifications();
+    //   } else if (repeatTask.value == "yearly") {
+    //     for (let i = 0; i < 10; i++) {
+    //       // console.log("YEARLY " + dateEntered);
+    //       datesList.push(dateEntered.toString().substring(0, 15));
+    //       dateEntered.setDate(dateEntered.getDate() + 365);
+    //     }
+    //     sendNotifications();
+    //   }
 
-      console.info(datesList);
-    });
+    //   console.info(datesList);
+    // });
 
-    colorTask.addEventListener("change", async () => {
-      await updateTask(task, "color", colorTask.value);
-    });
+    // colorTask.addEventListener("change", async () => {
+    //   await updateTask(task, "color", colorTask.value);
+    // });
+updateSubmit.addEventListener("click", async () => {
+  await updateTask(task, "color", colorTask.value);
+  await updateTask(task, "repeat", repeatTask.value);
+  await updateTask(task, "date", dateInput.value);
+  await updateTask(task, "description", descriptionInput.value);
+  await updateInDatabase(task);
+  refreshList();
+  //TODO need to refactor so eventLis isn't added on refresh
 
+})
     tasks_container.append(taskElement);
   }
 }
@@ -258,7 +275,7 @@ async function updateInDatabase(task) {
     },
     body: JSON.stringify(task),
   });
-
+  console.log("task", task);
   return await response.json();
 }
 
