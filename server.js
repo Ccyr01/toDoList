@@ -203,6 +203,7 @@ app.put("/task/:taskId", (req, res) => {
 //TODO: hit delete endpoint to delete items
 app.delete("/task/:taskId", (req, res) => {
   const id = req.params.taskId;
+  console.log(id);
   //TODO: add callbacks to 'then' and 'catch' for handling delete
   Task.deleteOne({_id: id}).exec()
   .then()

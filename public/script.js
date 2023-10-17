@@ -14,6 +14,7 @@ const notif_button = document.getElementById("notif");
 const datesList = [];
 
 let tasks = [];
+let selectedTasks = [];
 getTasks();
 console.log(tasks);
 
@@ -129,21 +130,31 @@ async function updateTask(task, key, value) {
 
 //TODO: use backend delete endpoint
 async function deleteCompleted() {
-  for (const task of tasks) {
+  for (const task of selectedTasks) {
     if (task.completed == true) {
       console.log(task);
+      tasks = tasks.filter((t) => {
+        return t._id != task._id;
+      });
+      refreshList();
+      console.log(tasks)
       await deleteFromDatabase(task);
+      
+      
     }
   }
 
-  refreshList();
+  
 }
 
 function refreshList() {
   tasks_container.innerHTML = "";
-
+  console.log(tasks)
   for (const task of tasks) {
     const taskElement = task_template.content.cloneNode(true);
+    if (taskElement){
+      taskElement.querySelector('.task').setAttribute("id", task._id)  
+    }
     const descriptionInput = taskElement.querySelector(".task-text");
     const completedInput = taskElement.querySelector(".task-complete");
     const dateInput = taskElement.querySelector(".task-date");
@@ -162,10 +173,24 @@ function refreshList() {
     //   await updateTask(task, "description", descriptionInput.value);
     // });
 
-    // completedInput.addEventListener("change", async () => {
-    //   if (!task.completed) updateTask(task, "completed", true);
-    //   else updateTask(task, "completed", false);
-    // });
+    completedInput.addEventListener("change", async (e) => {
+      let target = e.target;
+      if (!task.completed) {
+        updateTask(task, "completed", true);
+        selectedTasks.push(task);
+        console.log(selectedTasks);
+      }
+      else {
+        updateTask(task, "completed", false);
+        selectedTasks = selectedTasks.filter((t) => {
+          return t._id != task._id;
+        })
+        console.log(selectedTasks);
+
+      }
+      
+      
+    });
 
     // dateInput.addEventListener("change", async () => {
     //   await updateTask(task, "date", dateInput.value);
@@ -209,7 +234,11 @@ function refreshList() {
     // colorTask.addEventListener("change", async () => {
     //   await updateTask(task, "color", colorTask.value);
     // });
+
 updateSubmit.addEventListener("click", async () => {
+  if(isWaiting){
+    return;
+  }
   await updateTask(task, "color", colorTask.value);
   await updateTask(task, "repeat", repeatTask.value);
   await updateTask(task, "date", dateInput.value);
@@ -228,6 +257,7 @@ add_button.addEventListener("click", async () => {
 });
 
 delete_button.addEventListener("click", async () => {
+  console.log("clicked")
   await deleteCompleted();
 });
 
@@ -280,6 +310,7 @@ async function updateInDatabase(task) {
 }
 
 async function deleteFromDatabase(task) {
+  console.log(task._id);
   const response = await fetch(`http://localhost:3000/task/${task._id}`, {
     method: "DELETE",
     headers: {
